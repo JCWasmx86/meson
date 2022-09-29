@@ -1,6 +1,7 @@
 import argparse
-from . import coredata, mlog, mparser
+from . import coredata, mparser
 from . import mesonlib
+from .ast import AstFormatter
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     coredata.register_builtin_arguments(parser)
@@ -17,4 +18,9 @@ def run(options: argparse.Namespace) -> int:
         except mesonlib.MesonException as me:
             me.file = filename
             raise me
-        print(codeblock)
+        formatter = AstFormatter()
+        codeblock.accept(formatter)
+        formatter.end()
+        for line in formatter.lines:
+            print(line)
+        print(dir(codeblock))
