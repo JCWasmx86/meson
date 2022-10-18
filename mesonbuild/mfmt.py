@@ -23,5 +23,6 @@ def run(options: argparse.Namespace) -> int:
         formatter = AstFormatter(comments)
         codeblock.accept(formatter)
         formatter.end()
+        print('This will probably eat some of your comments', file=sys.stderr)
         for line in formatter.lines:
             print(line)
