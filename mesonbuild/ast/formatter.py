@@ -16,6 +16,7 @@
 import re
 from .. import mparser
 from . import AstVisitor
+import typing as T
 
 arithmic_map = {
     'add': '+',
@@ -26,7 +27,7 @@ arithmic_map = {
 }
 
 class AstFormatter(AstVisitor):
-    def __init__(self, comments: [mparser.Comment]):
+    def __init__(self, comments: T.List[mparser.Comment]):
         self.lines = []
         self.indentstr = '        '
         self.currindent = ''
