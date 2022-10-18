@@ -28,7 +28,7 @@ arithmic_map = {
 class AstFormatter(AstVisitor):
     def __init__(self):
         self.lines = []
-        self.indentstr = '  '
+        self.indentstr = '        '
         self.currindent = ''
         self.currline = ''
 
@@ -39,8 +39,9 @@ class AstFormatter(AstVisitor):
         self.currline += to_append
 
     def force_linebreak(self):
-        self.lines.append(self.currline)
-        self.currline = self.currindent
+        if self.currline.strip() != '':
+            self.lines.append(self.currline)
+            self.currline = self.currindent
 
     def eventual_linebreak(self):
         if len(self.currline.strip()) != 0:
@@ -114,9 +115,13 @@ class AstFormatter(AstVisitor):
         node.value.accept(self)
 
     def visit_CodeBlockNode(self, node: mparser.CodeBlockNode) -> None:
+        idx = 0
         for i in node.lines:
             i.accept(self)
-            self.force_linebreak()
+            idx += 1
+            if idx != len(node.lines) - 2:
+                self.force_linebreak()
+
     def visit_IndexNode(self, node: mparser.IndexNode) -> None:
         node.iobject.accept(self)
         self.append('[')
@@ -144,28 +149,38 @@ class AstFormatter(AstVisitor):
 
     def visit_ForeachClauseNode(self, node: mparser.ForeachClauseNode) -> None:
         self.eventual_linebreak()
-        varnames = [x for x in node.varnames]
+        varnames = list(node.varnames)
+        tmp = self.currindent
         self.append('foreach ')
         self.append(', '.join(varnames))
         self.append(' : ')
         node.items.accept(self)
-        self.indentstr += ' '
+        self.currindent += self.indentstr
         self.force_linebreak()
         node.block.accept(self)
-        self.indentstr = self.indentstr[:-1]
+        self.currindent = tmp
         self.force_linebreak()
+        self.currline = self.currindent
         self.append('endforeach')
         self.force_linebreak()
 
     def visit_IfClauseNode(self, node: mparser.IfClauseNode) -> None:
         prefix = ''
+        tmp = self.currindent
         for i in node.ifs:
             self.append(prefix + 'if ')
             prefix = 'el'
             i.accept(self)
+            self.currindent = tmp
+            self.currline = self.currindent
         if not isinstance(node.elseblock, mparser.EmptyNode):
             self.append('else')
+            self.currindent += self.indentstr
+            self.force_linebreak()
             node.elseblock.accept(self)
+            self.currindent = tmp
+            self.force_linebreak()
+        self.currindent = tmp
         self.append('endif')
 
     def visit_UMinusNode(self, node: mparser.UMinusNode) -> None:
@@ -174,8 +189,11 @@ class AstFormatter(AstVisitor):
 
     def visit_IfNode(self, node: mparser.IfNode) -> None:
         node.condition.accept(self)
+        tmp = self.currindent
+        self.currindent += self.indentstr
         self.force_linebreak()
         node.block.accept(self)
+        self.currindent = tmp
 
     def visit_TernaryNode(self, node: mparser.TernaryNode) -> None:
         node.condition.accept(self)
