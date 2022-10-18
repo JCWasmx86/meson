@@ -93,26 +93,26 @@ class AstFormatter(AstVisitor):
 
     def visit_OrNode(self, node: mparser.OrNode) -> None:
         node.left.accept(self)
-        self.append (' or ')
+        self.append(' or ')
         node.right.accept(self)
 
     def visit_AndNode(self, node: mparser.AndNode) -> None:
         node.left.accept(self)
-        self.append (' and ')
+        self.append(' and ')
         node.right.accept(self)
 
     def visit_ComparisonNode(self, node: mparser.ComparisonNode) -> None:
         node.left.accept(self)
-        self.append (' ' + node.ctype + ' ')
+        self.append(' ' + node.ctype + ' ')
         node.right.accept(self)
 
     def visit_ArithmeticNode(self, node: mparser.ArithmeticNode) -> None:
         node.left.accept(self)
-        self.append (' ' + arithmic_map[node.operation] + ' ')
+        self.append(' ' + arithmic_map[node.operation] + ' ')
         node.right.accept(self)
 
     def visit_NotNode(self, node: mparser.NotNode) -> None:
-        self.append (' not ')
+        self.append(' not ')
         node.value.accept(self)
 
     def visit_CodeBlockNode(self, node: mparser.CodeBlockNode) -> None:

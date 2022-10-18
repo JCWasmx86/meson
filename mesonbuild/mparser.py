@@ -162,7 +162,7 @@ class Lexer:
             ('gt', re.compile(r'>')),
             ('questionmark', re.compile(r'\?')),
         ]
-        self.comments = []
+        self.comments = [] # type: T.List[Comment]
 
     def getline(self, line_start: int) -> str:
         return self.code[line_start:self.code.find('\n', line_start)]
@@ -528,7 +528,7 @@ class Parser:
         self.getsym()
         self.in_ternary = False
 
-    def comments(self) -> [Comment]:
+    def comments(self) -> T.List[Comment]:
         return self.lexer.comments
 
     def getsym(self) -> None:
