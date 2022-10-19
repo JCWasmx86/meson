@@ -37,7 +37,7 @@ class AstFormatter(AstVisitor):
 
     def end(self):
         self.lines.append(self.currline)
-        for i,l in enumerate(self.lines):
+        for i, l in enumerate(self.lines):
             if l.strip() == '':
                 self.lines[i] = ''
 
