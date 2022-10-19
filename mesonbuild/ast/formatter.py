@@ -204,6 +204,8 @@ class AstFormatter(AstVisitor):
         tmp = self.currindent
         for i in node.ifs:
             self.check_comment(i)
+            self.currindent = tmp
+            self.currline = self.currindent
             self.append(prefix + 'if ')
             prefix = 'el'
             i.accept(self)
