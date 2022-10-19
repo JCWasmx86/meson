@@ -27,12 +27,13 @@ arithmic_map = {
 }
 
 class AstFormatter(AstVisitor):
-    def __init__(self, comments: T.List[mparser.Comment]):
+    def __init__(self, comments: T.List[mparser.Comment], lines: T.List[str]):
         self.lines = []
         self.indentstr = '        '
         self.currindent = ''
         self.currline = ''
         self.comments = comments
+        self.lines = lines
 
     def end(self):
         self.lines.append(self.currline)
@@ -44,6 +45,26 @@ class AstFormatter(AstVisitor):
         if self.currline.strip() != '':
             self.lines.append(self.currline)
             self.currline = self.currindent
+
+    def check_comment(self, node: mparser.BaseNode):
+        to_readd = None
+        idx = 0
+        for c in self.comments:
+            if c.lineno == node.lineno - 1 and self.lines[c.lineno - 1].strip().startswith('#'):
+                to_readd = c
+                break
+            idx += 1
+        if to_readd is None:
+            return
+        block_idx = idx
+        while block_idx >= 0 and self.comments[block_idx - 1].lineno + 1 == self.comments[block_idx].lineno:
+            block_idx -= 1
+        for i in range(block_idx, idx):
+            self.lines.append(self.currline + self.comments[i].text)
+        for i in range(idx - 1, block_idx - 1, -1):
+            self.comments.remove(self.comments[i])
+        self.lines.append(self.currline + to_readd.text)
+        self.comments.remove(to_readd)
 
     def eventual_linebreak(self):
         if len(self.currline.strip()) != 0:
@@ -119,6 +140,7 @@ class AstFormatter(AstVisitor):
     def visit_CodeBlockNode(self, node: mparser.CodeBlockNode) -> None:
         idx = 0
         for i in node.lines:
+            self.check_comment(i)
             i.accept(self)
             idx += 1
             if idx != len(node.lines) - 2:
@@ -153,6 +175,7 @@ class AstFormatter(AstVisitor):
         self.eventual_linebreak()
         varnames = list(node.varnames)
         tmp = self.currindent
+        self.check_comment(node)
         self.append('foreach ')
         self.append(', '.join(varnames))
         self.append(' : ')
@@ -170,12 +193,14 @@ class AstFormatter(AstVisitor):
         prefix = ''
         tmp = self.currindent
         for i in node.ifs:
+            self.check_comment(i)
             self.append(prefix + 'if ')
             prefix = 'el'
             i.accept(self)
             self.currindent = tmp
             self.currline = self.currindent
         if not isinstance(node.elseblock, mparser.EmptyNode):
+            self.check_comment(node.elseblock)
             self.append('else')
             self.currindent += self.indentstr
             self.force_linebreak()
