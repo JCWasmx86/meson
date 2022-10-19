@@ -67,7 +67,6 @@ class AstFormatter(AstVisitor):
         if to_readd is None:
             return
 
-
     def check_comment(self, node: mparser.BaseNode):
         to_readd = None
         idx = 0
