@@ -220,6 +220,7 @@ class AstFormatter(AstVisitor):
             self.currindent = tmp
             self.force_linebreak()
         self.currindent = tmp
+        self.currline = self.currindent
         self.append('endif')
 
     def visit_UMinusNode(self, node: mparser.UMinusNode) -> None:
