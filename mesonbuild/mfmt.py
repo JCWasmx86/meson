@@ -27,6 +27,6 @@ def run(options: argparse.Namespace) -> int:
         print('This will probably eat some of your comments', file=sys.stderr)
         for line in formatter.lines:
             print(line, end='\n')
-        print('Unable to readd', len(formatter.comments), 'comments')
+        print('Unable to readd', len(formatter.comments), 'comments', file=sys.stderr)
         for c in formatter.comments:
-            print(c.text)
+            print(c.text, file=sys.stderr)

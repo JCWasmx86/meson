@@ -33,7 +33,7 @@ class AstFormatter(AstVisitor):
         self.currindent = ''
         self.currline = ''
         self.comments = comments
-        self.lines = lines
+        self.old_lines = lines
 
     def end(self):
         self.lines.append(self.currline)
@@ -54,7 +54,7 @@ class AstFormatter(AstVisitor):
         to_readd = None
         idx = 0
         for c in self.comments:
-            if c.lineno == node.lineno - 1 and self.lines[c.lineno - 1].strip().startswith('#'):
+            if c.lineno == node.lineno - 1 and self.old_lines[c.lineno - 1].strip().startswith('#'):
                 to_readd = c
                 break
             idx += 1
@@ -153,7 +153,7 @@ class AstFormatter(AstVisitor):
             i.accept(self)
             lastline = i.lineno
             idx += 1
-            if idx != len(node.lines) - 2:
+            if idx != len(node.lines) - 1:
                 self.force_linebreak()
 
     def visit_IndexNode(self, node: mparser.IndexNode) -> None:
