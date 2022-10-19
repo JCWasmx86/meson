@@ -50,6 +50,24 @@ class AstFormatter(AstVisitor):
             self.lines.append(self.currline)
             self.currline = self.currindent
 
+    def check_adjacent_comment(self, node: mparser.BaseNode):
+        idx = 0
+        to_readd = None
+        for c in self.comments:
+            if c.lineno == node.lineno and (c.lineno == node.lineno if node.end_lineno is not None else True):
+                # Check if the node is really the "biggest" one, i.e. after the node on the line,
+                # there is only the comment.
+                # TODO: Does not seem to work
+                bound_matches = self.old_lines[c.lineno - 1][node.end_colno:c.colno].strip() == ''
+                if not bound_matches:
+                    continue
+                to_readd = c
+                break
+            idx += 1
+        if to_readd is None:
+            return
+
+
     def check_comment(self, node: mparser.BaseNode):
         to_readd = None
         idx = 0
@@ -151,10 +169,10 @@ class AstFormatter(AstVisitor):
                     for _ in range(0, (i.lineno - lastline) - 1):
                         self.force_linebreak()
             i.accept(self)
+            self.check_adjacent_comment(i)
             lastline = i.lineno
             idx += 1
-            if idx != len(node.lines) - 1:
-                self.force_linebreak()
+            self.force_linebreak()
 
     def visit_IndexNode(self, node: mparser.IndexNode) -> None:
         node.iobject.accept(self)
