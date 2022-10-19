@@ -37,6 +37,10 @@ class AstFormatter(AstVisitor):
 
     def end(self):
         self.lines.append(self.currline)
+        for i in range(0, len(self.lines)):
+            s = self.lines[i]
+            if s.strip() == '':
+                self.lines[i] = ''
 
     def append(self, to_append):
         self.currline += to_append
@@ -139,9 +143,15 @@ class AstFormatter(AstVisitor):
 
     def visit_CodeBlockNode(self, node: mparser.CodeBlockNode) -> None:
         idx = 0
+        lastline = -1
         for i in node.lines:
             self.check_comment(i)
+            if lastline != -1:
+                if i.lineno > lastline + 1:
+                    for _ in range(0, (i.lineno - lastline) - 1):
+                        self.force_linebreak()
             i.accept(self)
+            lastline = i.lineno
             idx += 1
             if idx != len(node.lines) - 2:
                 self.force_linebreak()
