@@ -181,12 +181,62 @@ class AstFormatter(AstVisitor):
     def visit_MethodNode(self, node: mparser.MethodNode) -> None:
         node.source_object.accept(self)
         self.append('.' + node.name + '(')
-        node.args.accept(self)
+        if len(node.args.arguments) != 0 or len(node.args.kwargs) != 0:
+            args = node.args
+            tmp = self.currindent
+            indent_len = len(self.currline)
+            for i, arg in enumerate(args.arguments):
+                arg.accept(self)
+                if i != len(args.arguments) -1 or len(node.args.kwargs) != 0:
+                    self.currindent = ' ' * indent_len
+                    self.append(', ')
+                    self.force_linebreak()
+            max_len = 0
+            for i, kwarg in enumerate(args.kwargs):
+                max_len = max(max_len, len(kwarg.value))
+            max_len += 1
+            for i, kwarg in enumerate(args.kwargs):
+                self.currindent = ' ' * indent_len
+                name = kwarg.value
+                padding = ' ' * (max_len - len(name))
+                self.append (name + padding + ': ')
+                args.kwargs[kwarg].accept(self)
+                if i == len(args.kwargs) - 1:
+                    self.currindent = tmp
+                else:
+                    self.append(',')
+                    self.force_linebreak()
+            self.currindent = tmp
         self.append(')')
 
     def visit_FunctionNode(self, node: mparser.FunctionNode) -> None:
         self.append(node.func_name + '(')
-        node.args.accept(self)
+        if len(node.args.arguments) != 0 or len(node.args.kwargs) != 0:
+            args = node.args
+            tmp = self.currindent
+            indent_len = len(self.currline)
+            for i, arg in enumerate(args.arguments):
+                arg.accept(self)
+                if i != len(args.arguments) -1 or len(node.args.kwargs) != 0:
+                    self.currindent = ' ' * indent_len
+                    self.append(', ')
+                    self.force_linebreak()
+            max_len = 0
+            for i, kwarg in enumerate(args.kwargs):
+                max_len = max(max_len, len(kwarg.value))
+            max_len += 1
+            for i, kwarg in enumerate(args.kwargs):
+                self.currindent = ' ' * indent_len
+                name = kwarg.value
+                padding = ' ' * (max_len - len(name))
+                self.append (name + padding + ': ')
+                args.kwargs[kwarg].accept(self)
+                if i == len(args.kwargs) - 1:
+                    self.currindent = tmp
+                else:
+                    self.append(',')
+                    self.force_linebreak()
+            self.currindent = tmp
         self.append(')')
 
     def visit_AssignmentNode(self, node: mparser.AssignmentNode) -> None:
