@@ -187,7 +187,7 @@ class AstFormatter(AstVisitor):
             indent_len = len(self.currline)
             for i, arg in enumerate(args.arguments):
                 arg.accept(self)
-                if i != len(args.arguments) -1 or len(node.args.kwargs) != 0:
+                if i != len(args.arguments) - 1 or len(node.args.kwargs) != 0:
                     self.currindent = ' ' * indent_len
                     self.append(', ')
                     self.force_linebreak()
@@ -199,7 +199,7 @@ class AstFormatter(AstVisitor):
                 self.currindent = ' ' * indent_len
                 name = kwarg.value
                 padding = ' ' * (max_len - len(name))
-                self.append (name + padding + ': ')
+                self.append(name + padding + ': ')
                 args.kwargs[kwarg].accept(self)
                 if i == len(args.kwargs) - 1:
                     self.currindent = tmp
@@ -217,7 +217,7 @@ class AstFormatter(AstVisitor):
             indent_len = len(self.currline)
             for i, arg in enumerate(args.arguments):
                 arg.accept(self)
-                if i != len(args.arguments) -1 or len(node.args.kwargs) != 0:
+                if i != len(args.arguments) - 1 or len(node.args.kwargs) != 0:
                     self.currindent = ' ' * indent_len
                     self.append(', ')
                     self.force_linebreak()
@@ -229,7 +229,7 @@ class AstFormatter(AstVisitor):
                 self.currindent = ' ' * indent_len
                 name = kwarg.value
                 padding = ' ' * (max_len - len(name))
-                self.append (name + padding + ': ')
+                self.append(name + padding + ': ')
                 args.kwargs[kwarg].accept(self)
                 if i == len(args.kwargs) - 1:
                     self.currindent = tmp
