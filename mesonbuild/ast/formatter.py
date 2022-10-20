@@ -29,7 +29,7 @@ arithmic_map = {
 class AstFormatter(AstVisitor):
     def __init__(self, comments: T.List[mparser.Comment], lines: T.List[str]):
         self.lines = []
-        self.indentstr = '        '
+        self.indentstr = '  '
         self.currindent = ''
         self.currline = ''
         self.comments = comments
@@ -191,11 +191,45 @@ class AstFormatter(AstVisitor):
 
     def visit_AssignmentNode(self, node: mparser.AssignmentNode) -> None:
         self.append(node.var_name + ' = ')
-        node.value.accept(self)
+        if isinstance(node.value, mparser.ArrayNode) and len(node.value.args.arguments) != 0:
+            self.append('[')
+            tmp = self.currindent
+            align_of_elements = len(node.var_name) + 2
+            self.currindent = ' ' * align_of_elements
+            self.force_linebreak()
+            for i, e in enumerate(node.value.args.arguments):
+                self.currindent = ' ' * align_of_elements
+                e.accept(self)
+                self.append(",")
+                if i == len(node.value.args.arguments) - 1:
+                    self.currindent = tmp
+                self.force_linebreak()
+            self.append(']')
+            self.currindent = tmp
+            self.force_linebreak()
+        else:
+            node.value.accept(self)
 
     def visit_PlusAssignmentNode(self, node: mparser.PlusAssignmentNode) -> None:
         self.append(node.var_name + ' += ')
-        node.value.accept(self)
+        if isinstance(node.value, mparser.ArrayNode) and len(node.value.args.arguments) != 0:
+            self.append('[')
+            tmp = self.currindent
+            align_of_elements = len(node.var_name) + 3
+            self.currindent = ' ' * align_of_elements
+            self.force_linebreak()
+            for i, e in enumerate(node.value.args.arguments):
+                self.currindent = ' ' * align_of_elements
+                e.accept(self)
+                self.append(",")
+                if i == len(node.value.args.arguments) - 1:
+                    self.currindent = tmp
+                self.force_linebreak()
+            self.append(']')
+            self.currindent = tmp
+            self.force_linebreak()
+        else:
+            node.value.accept(self)
 
     def visit_ForeachClauseNode(self, node: mparser.ForeachClauseNode) -> None:
         self.eventual_linebreak()
