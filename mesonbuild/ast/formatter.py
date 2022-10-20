@@ -189,8 +189,11 @@ class AstFormatter(AstVisitor):
                 arg.accept(self)
                 if i != len(args.arguments) - 1 or len(node.args.kwargs) != 0:
                     self.currindent = ' ' * indent_len
-                    self.append(', ')
-                    self.force_linebreak()
+                    if len(node.args.kwargs) == 0 and len(args.arguments) == 2:
+                        self.append(', ')
+                    else:
+                        self.append(',')
+                        self.force_linebreak()
             max_len = 0
             for i, kwarg in enumerate(args.kwargs):
                 max_len = max(max_len, len(kwarg.value))
@@ -219,8 +222,11 @@ class AstFormatter(AstVisitor):
                 arg.accept(self)
                 if i != len(args.arguments) - 1 or len(node.args.kwargs) != 0:
                     self.currindent = ' ' * indent_len
-                    self.append(', ')
-                    self.force_linebreak()
+                    if len(node.args.kwargs) == 0 and len(args.arguments) == 2:
+                        self.append(', ')
+                    else:
+                        self.append(',')
+                        self.force_linebreak()
             max_len = 0
             for i, kwarg in enumerate(args.kwargs):
                 max_len = max(max_len, len(kwarg.value))
