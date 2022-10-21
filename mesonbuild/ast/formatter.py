@@ -154,18 +154,18 @@ class AstFormatter(AstVisitor):
         node.right.accept(self)
 
     def visit_NotNode(self, node: mparser.NotNode) -> None:
-        self.append(' not ')
+        self.append('not ')
         node.value.accept(self)
 
     def visit_CodeBlockNode(self, node: mparser.CodeBlockNode) -> None:
         idx = 0
         lastline = -1
         for i in node.lines:
-            self.check_comment(i)
             if lastline != -1:
                 if i.lineno > lastline + 1:
-                    for _ in range(0, (i.lineno - lastline) - 1):
-                        self.force_linebreak()
+                    self.lines.append(self.currline)
+                    self.currline = self.currindent
+            self.check_comment(i)
             i.accept(self)
             self.check_adjacent_comment(i)
             lastline = i.lineno
@@ -245,45 +245,35 @@ class AstFormatter(AstVisitor):
             self.currindent = tmp
         self.append(')')
 
+    def visit_ArrayNodeAssignment(self, node: mparser.ArrayNode, indent: int) -> None:
+        assert isinstance(node, mparser.ArrayNode)
+        self.append('[')
+        tmp = self.currindent
+        align_of_elements = indent
+        self.currindent = ' ' * align_of_elements
+        self.force_linebreak()
+        for i, e in enumerate(node.args.arguments):
+            self.currindent = ' ' * align_of_elements
+            e.accept(self)
+            self.append(",")
+            if i == len(node.args.arguments) - 1:
+                self.currindent = tmp
+            self.force_linebreak()
+        self.append(']')
+        self.currindent = tmp
+        self.force_linebreak()
+
     def visit_AssignmentNode(self, node: mparser.AssignmentNode) -> None:
         self.append(node.var_name + ' = ')
         if isinstance(node.value, mparser.ArrayNode) and len(node.value.args.arguments) != 0:
-            self.append('[')
-            tmp = self.currindent
-            align_of_elements = len(node.var_name) + 2
-            self.currindent = ' ' * align_of_elements
-            self.force_linebreak()
-            for i, e in enumerate(node.value.args.arguments):
-                self.currindent = ' ' * align_of_elements
-                e.accept(self)
-                self.append(",")
-                if i == len(node.value.args.arguments) - 1:
-                    self.currindent = tmp
-                self.force_linebreak()
-            self.append(']')
-            self.currindent = tmp
-            self.force_linebreak()
+            self.visit_ArrayNodeAssignment(node.value, len(node.var_name) + 2)
         else:
             node.value.accept(self)
 
     def visit_PlusAssignmentNode(self, node: mparser.PlusAssignmentNode) -> None:
         self.append(node.var_name + ' += ')
         if isinstance(node.value, mparser.ArrayNode) and len(node.value.args.arguments) != 0:
-            self.append('[')
-            tmp = self.currindent
-            align_of_elements = len(node.var_name) + 3
-            self.currindent = ' ' * align_of_elements
-            self.force_linebreak()
-            for i, e in enumerate(node.value.args.arguments):
-                self.currindent = ' ' * align_of_elements
-                e.accept(self)
-                self.append(",")
-                if i == len(node.value.args.arguments) - 1:
-                    self.currindent = tmp
-                self.force_linebreak()
-            self.append(']')
-            self.currindent = tmp
-            self.force_linebreak()
+            self.visit_ArrayNodeAssignment(node.value, len(node.var_name) + 4)
         else:
             node.value.accept(self)
 
