@@ -37,6 +37,8 @@ class AstFormatter(AstVisitor):
 
     def end(self):
         self.lines.append(self.currline)
+        for i, c in enumerate(self.comments):
+            print(c)
         for i, l in enumerate(self.lines):
             if l.strip() == '':
                 self.lines[i] = ''
@@ -87,8 +89,12 @@ class AstFormatter(AstVisitor):
         block_idx = idx
         while block_idx >= 0 and self.comments[block_idx - 1].lineno + 1 == self.comments[block_idx].lineno:
             block_idx -= 1
+        old_line = self.comments[block_idx].lineno
         for i in range(block_idx, idx):
             self.lines.append(self.currline + self.comments[i].text)
+            for x in range(old_line, self.comments[i].lineno + 1):
+                self.lines.append('')
+            old_line = self.comments[i].lineno
         for i in range(idx - 1, block_idx - 1, -1):
             self.comments.remove(self.comments[i])
         self.lines.append(self.currline + to_readd.text)
