@@ -49,22 +49,30 @@ class AstFormatter(AstVisitor):
             self.lines.append(self.currline)
             self.currline = self.currindent
 
-    def check_adjacent_comment(self, node: mparser.BaseNode):
+    def check_adjacent_comment(self, node: mparser.BaseNode, append: str):
         idx = 0
         to_readd = None
         for c in self.comments:
             if c.lineno == node.lineno and (c.lineno == node.lineno if node.end_lineno is not None else True):
                 # Check if the node is really the "biggest" one, i.e. after the node on the line,
                 # there is only the comment.
-                # TODO: Does not seem to work
-                bound_matches = self.old_lines[c.lineno - 1][node.end_colno:c.colno].strip() == ''
+                # TODO: Does not seem to work all the time
+                add_extra = 0
+                if isinstance(node, mparser.StringNode):
+                    add_extra += 2 + len(node.value)
+                diffstr = self.old_lines[c.lineno - 1][node.end_colno + add_extra:c.colno].strip()
+                bound_matches = diffstr in ('', ',')
                 if not bound_matches:
                     continue
                 to_readd = c
                 break
             idx += 1
+        self.append(append)
         if to_readd is None:
             return
+        self.append(' ')
+        self.append(c.text)
+        self.comments.remove(c)
 
     def check_comment(self, node: mparser.BaseNode):
         to_readd = None
@@ -85,6 +93,23 @@ class AstFormatter(AstVisitor):
             self.comments.remove(self.comments[i])
         self.lines.append(self.currline + to_readd.text)
         self.comments.remove(to_readd)
+
+    def check_post_comment(self, node: mparser.BaseNode):
+        to_readd = None
+        idx = 0
+        for c in self.comments:
+            if c.lineno == node.lineno + 1 and self.old_lines[c.lineno - 1].strip().startswith('#'):
+                to_readd = c
+                break
+            idx += 1
+        if to_readd is None:
+            return
+        block_idx = idx
+        while block_idx < len(self.comments) - 1 and self.comments[block_idx + 1].lineno == self.comments[block_idx].lineno + 1:
+            block_idx += 1
+        for i in range(idx, block_idx + 1):
+            self.lines.append(self.currline + self.comments[idx].text)
+            del self.comments[idx]
 
     def eventual_linebreak(self):
         if len(self.currline.strip()) != 0:
@@ -160,6 +185,7 @@ class AstFormatter(AstVisitor):
     def visit_CodeBlockNode(self, node: mparser.CodeBlockNode) -> None:
         idx = 0
         lastline = -1
+        self.check_comment(node)
         for i in node.lines:
             if lastline != -1:
                 if i.lineno > lastline + 1:
@@ -167,10 +193,12 @@ class AstFormatter(AstVisitor):
                     self.currline = self.currindent
             self.check_comment(i)
             i.accept(self)
-            self.check_adjacent_comment(i)
+            self.check_adjacent_comment(i, '')
             lastline = i.lineno
             idx += 1
             self.force_linebreak()
+        if len(node.lines) != 0:
+            self.check_post_comment(node.lines[len(node.lines) - 1])
 
     def visit_IndexNode(self, node: mparser.IndexNode) -> None:
         node.iobject.accept(self)
@@ -182,6 +210,7 @@ class AstFormatter(AstVisitor):
         tmp = self.currindent
         indent_len = len(self.currline)
         for i, arg in enumerate(args.arguments):
+            self.check_comment(arg)
             arg.accept(self)
             if i != len(args.arguments) - 1 or len(args.kwargs) != 0:
                 self.currindent = ' ' * indent_len
@@ -195,6 +224,7 @@ class AstFormatter(AstVisitor):
             max_len = max(max_len, len(kwarg.value))
         max_len += 1
         for i, kwarg in enumerate(args.kwargs):
+            self.check_comment(kwarg)
             self.currindent = ' ' * indent_len
             name = kwarg.value
             padding = ' ' * (max_len - len(name))
@@ -232,8 +262,7 @@ class AstFormatter(AstVisitor):
             self.currindent = tmp + self.indentstr
             self.check_comment(e)
             e.accept(self)
-            self.check_adjacent_comment(e)
-            self.append(",")
+            self.check_adjacent_comment(e, ',')
             if i == len(node.args.arguments) - 1:
                 self.currindent = tmp
             self.force_linebreak()
@@ -257,7 +286,7 @@ class AstFormatter(AstVisitor):
             self.append(' ' * (align - len(e.value) + 1))
             self.append(': ')
             node.args.kwargs[e].accept(self)
-            self.check_adjacent_comment(e)
+            self.check_adjacent_comment(e, ',')
             self.append(",")
             if i == len(node.args.kwargs) - 1:
                 self.currindent = tmp
