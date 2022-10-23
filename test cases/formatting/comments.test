@@ -1,0 +1,18 @@
+# Legal stuff
+# Legal stuff
+
+# Legal stuff
+# Legal stuff
+
+# Foo123
+foo = [
+  'foo', # Foo456
+]
+
+if true
+  # Foo
+
+  # Bar
+  warning() # Foo
+  # Foo
+endif

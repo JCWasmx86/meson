@@ -291,7 +291,6 @@ class AstFormatter(AstVisitor):
             self.append(': ')
             node.args.kwargs[e].accept(self)
             self.check_adjacent_comment(e, ',')
-            self.append(",")
             if i == len(node.args.kwargs) - 1:
                 self.currindent = tmp
             self.force_linebreak()
