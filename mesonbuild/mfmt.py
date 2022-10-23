@@ -34,4 +34,3 @@ def run(options: argparse.Namespace) -> int:
         print('Unable to readd', len(formatter.comments), 'comments', file=sys.stderr)
         for c in formatter.comments:
             print(c.text, file=sys.stderr)
-
