@@ -5,6 +5,7 @@
 # Legal stuff
 
 # Foo123
+
 foo = [
   'foo', # Foo456,
   'abc'.strip(), # FOOOOO

@@ -79,7 +79,13 @@ class AstFormatter(AstVisitor):
     def check_comment(self, node: mparser.BaseNode):
         to_readd = None
         idx = 0
+        tmp_lineno = node.lineno - 1
+        while tmp_lineno > 0 and self.old_lines[tmp_lineno - 1].strip() == '':
+            tmp_lineno -= 1
         for c in self.comments:
+            if c.lineno == tmp_lineno:
+                to_readd = c
+                break
             if c.lineno == node.lineno - 1 and self.old_lines[c.lineno - 1].strip().startswith('#'):
                 to_readd = c
                 break
@@ -113,6 +119,8 @@ class AstFormatter(AstVisitor):
             old_line = self.comments[i].lineno
         for i in range(block_idx, idx + 1):
             self.comments.remove(self.comments[block_idx])
+        for i in range(0, node.lineno - tmp_lineno - 1):
+            self.lines.append('')
 
     def check_post_comment(self, node: mparser.BaseNode):
         to_readd = None
