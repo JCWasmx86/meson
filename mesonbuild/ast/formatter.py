@@ -58,9 +58,16 @@ class AstFormatter(AstVisitor):
                 # there is only the comment.
                 # TODO: Does not seem to work all the time
                 add_extra = 0
+                print(c)
+                print(node)
                 if isinstance(node, mparser.StringNode):
                     add_extra += 2 + len(node.value)
+                elif isinstance(node, mparser.MethodNode):
+                    add_extra += node.args.end_colno + 3
+                    print(node.source_object)
+                    print(node.args)
                 diffstr = self.old_lines[c.lineno - 1][node.end_colno + add_extra:c.colno].strip()
+                print(diffstr)
                 bound_matches = diffstr in ('', ',')
                 if not bound_matches:
                     continue

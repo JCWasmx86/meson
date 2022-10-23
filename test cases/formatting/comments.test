@@ -6,7 +6,8 @@
 
 # Foo123
 foo = [
-  'foo', # Foo456
+  'foo', # Foo456,
+  'abc'.strip(), # FOOOOO
 ]
 
 if true
@@ -17,6 +18,12 @@ if true
   # Baz2
   # Baz3
   warning() # Foo
-  # Foo
+  # Foo1234
 endif
+
+bar()
+foo() # Foo12345
+
+foo.bar('ABC', true) # Do stuff
+bar('ABC', true) # Do stuff 2
 
