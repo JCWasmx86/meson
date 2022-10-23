@@ -13,6 +13,10 @@ if true
   # Foo
 
   # Bar
+  # Baz
+  # Baz2
+  # Baz3
   warning() # Foo
   # Foo
 endif
+

@@ -88,15 +88,29 @@ class AstFormatter(AstVisitor):
         while block_idx >= 0 and self.comments[block_idx - 1].lineno + 1 == self.comments[block_idx].lineno:
             block_idx -= 1
         old_line = self.comments[block_idx].lineno
-        for i in range(block_idx, idx):
-            self.lines.append(self.currline + self.comments[i].text)
-            for x in range(old_line, self.comments[i].lineno + 1):
+        assert(block_idx <= idx)
+        assert(old_line <= self.comments[idx].lineno)
+        while block_idx > 0:
+            prev_comment = self.comments[block_idx - 1]
+            assert(prev_comment.lineno < old_line)
+            to_break = False
+            for lidx in range(prev_comment.lineno, old_line):
+                if self.old_lines[lidx].strip() == '' or self.old_lines[lidx].strip().startswith('#'):
+                    continue
+                to_break = True
+                break
+            if to_break:
+                break
+            block_idx -= 1
+            old_Line = self.comments[block_idx].lineno
+            assert(old_line <= self.comments[idx].lineno)
+        for i in range(block_idx, idx + 1):
+            for x in range(old_line, self.comments[i].lineno - 1):
                 self.lines.append('')
+            self.lines.append(self.currline + self.comments[i].text)
             old_line = self.comments[i].lineno
-        for i in range(idx - 1, block_idx - 1, -1):
-            self.comments.remove(self.comments[i])
-        self.lines.append(self.currline + to_readd.text)
-        self.comments.remove(to_readd)
+        for i in range(block_idx, idx + 1):
+            self.comments.remove(self.comments[block_idx])
 
     def check_post_comment(self, node: mparser.BaseNode):
         to_readd = None
