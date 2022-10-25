@@ -45,8 +45,8 @@ def run(options: argparse.Namespace) -> int:
                 value = parts[1].lower()
                 if key == 'max_line_len':
                     config['max_line_len'] = int(value)
-                elif key == 'space_array' or key == 'kwa_ml' or key == 'wide_colon' or key == 'no_single_comma_function':
-                    if value == 'false' or value == 'true':
+                elif key in ('space_array', 'kwa_ml', 'wide_colon', 'no_single_comma_function'):
+                    if value in ('false', 'true'):
                         config[key] = value.lower() == 'true'
                     else:
                         print('Unexpected value for key', key, file=sys.stderr)
