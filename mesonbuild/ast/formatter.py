@@ -430,3 +430,8 @@ class AstFormatter(AstVisitor):
             val.accept(self)
             self.append(', ')
         self.currline = re.sub(r', $', '', self.currline)
+
+    def visit_ParenthesizedNode(self, node: mparser.ParenthesizedNode) -> None:
+        self.append('(')
+        node.inner.accept(self)
+        self.append(')')
