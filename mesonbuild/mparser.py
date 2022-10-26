@@ -484,7 +484,7 @@ class IfClauseNode(BaseNode):
         self.elseblock = None  # type: T.Union[EmptyNode, CodeBlockNode]
 
 class ParenthesizedNode(BaseNode):
-    def __init__(self, inner: ArgumentNode, lineno: int, colno: int, end_lineno: int, end_colno: int):
+    def __init__(self, inner: BaseNode, lineno: int, colno: int, end_lineno: int, end_colno: int):
         super().__init__(lineno, colno, inner.filename, end_lineno=end_lineno, end_colno=end_colno)
         self.inner = inner              # type: BaseNode
 
