@@ -2134,6 +2134,19 @@ class NinjaBackend(backends.Backend):
                 others.append(i)
         return srcs, others
 
+    def generate_umbrella(self, target):
+        name = target.name if isinstance(target.generate_umbrella, bool) else target.generate_umbrella
+        private_dir = self.get_target_private_dir_abs(target)
+        module_file = os.path.join(private_dir, 'module.modulemap')
+        module_path = os.path.normcase(os.path.abspath(os.path.join(target.subdir, '..', self.get_target_source_dir(target))))
+        if os.path.exists(module_file):
+            return
+        with open(module_file, 'w') as filep:
+            filep.write('module ' + name + ' {\n')
+            filep.write(f'  umbrella \"{module_path}/include\"\n')
+            filep.write('  export *\n')
+            filep.write('}\n')
+
     def generate_swift_target(self, target):
         module_name = self.target_swift_modulename(target)
         swiftc = target.compilers['swift']
@@ -2155,6 +2168,9 @@ class NinjaBackend(backends.Backend):
             else:
                 raise InvalidArguments(f'Swift target {target.get_basename()} contains a non-swift source file.')
         os.makedirs(self.get_target_private_dir_abs(target), exist_ok=True)
+        for t in target.get_dependencies():
+            if t.generate_umbrella == True or isinstance(t.generate_umbrella, str):
+                self.generate_umbrella(t)
         compile_args = swiftc.get_compile_only_args()
         compile_args += swiftc.get_optimization_args(target.get_option(OptionKey('optimization')))
         compile_args += swiftc.get_debug_args(target.get_option(OptionKey('debug')))

@@ -82,6 +82,7 @@ buildtarget_kwargs = {
     'build_rpath',
     'dependencies',
     'extra_files',
+    'generate_umbrella',
     'gui_app',
     'link_with',
     'link_whole',
@@ -697,6 +698,7 @@ class BuildTarget(Target):
     known_kwargs = known_build_target_kwargs
 
     install_dir: T.List[T.Union[str, Literal[False]]]
+    generate_umbrella: T.Union[str, bool]
 
     def __init__(
             self,
@@ -739,6 +741,7 @@ class BuildTarget(Target):
         self.pie = False
         # Track build_rpath entries so we can remove them at install time
         self.rpath_dirs_to_remove: T.Set[bytes] = set()
+        self.generate_umbrella = False
         self.process_sourcelist(sources)
         # Objects can be:
         # 1. Preexisting objects provided by the user with the `objects:` kwarg
@@ -1245,6 +1248,10 @@ class BuildTarget(Target):
         if any(not isinstance(v, str) for v in rust_dependency_map.values()):
             raise InvalidArguments(f'Invalid rust_dependency_map "{rust_dependency_map}": must be a dictionary with string values.')
         self.rust_dependency_map = rust_dependency_map
+        generate_umbrella = kwargs.get('generate_umbrella', False)
+        if not isinstance(generate_umbrella, (str, bool)):
+            raise InvalidArguments(f'Invalid generate_umbrella "{generate_umbrella}": must be a str or bool.')
+        self.generate_umbrella = generate_umbrella
 
     def validate_win_subsystem(self, value: str) -> str:
         value = value.lower()
