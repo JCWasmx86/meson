@@ -2172,7 +2172,7 @@ class NinjaBackend(backends.Backend):
             if t.generate_umbrella == True or isinstance(t.generate_umbrella, str):
                 self.generate_umbrella(t)
         compile_args = swiftc.get_compile_only_args()
-        if not isinstance(target, build.Executable) or len(target.get_sources()) == 1:
+        if not isinstance(target, build.Executable) or (len(target.get_sources()) == 1 and not target.get_sources()[0].relative_name().endswith('main.swift')):
             compile_args += ['-parse-as-library']
         compile_args += swiftc.get_optimization_args(target.get_option(OptionKey('optimization')))
         compile_args += swiftc.get_debug_args(target.get_option(OptionKey('debug')))
