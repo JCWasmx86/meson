@@ -83,6 +83,7 @@ buildtarget_kwargs = {
     'dependencies',
     'extra_files',
     'generate_umbrella',
+    'umbrella_path'
     'gui_app',
     'link_with',
     'link_whole',
@@ -98,6 +99,7 @@ buildtarget_kwargs = {
     'name_prefix',
     'name_suffix',
     'native',
+    'umbrella_path',
     'objects',
     'override_options',
     'sources',
@@ -699,6 +701,7 @@ class BuildTarget(Target):
 
     install_dir: T.List[T.Union[str, Literal[False]]]
     generate_umbrella: T.Union[str, bool]
+    umbrella_path: str
 
     def __init__(
             self,
@@ -742,6 +745,7 @@ class BuildTarget(Target):
         # Track build_rpath entries so we can remove them at install time
         self.rpath_dirs_to_remove: T.Set[bytes] = set()
         self.generate_umbrella = False
+        self.umbrella_path = 'include'
         self.process_sourcelist(sources)
         # Objects can be:
         # 1. Preexisting objects provided by the user with the `objects:` kwarg
@@ -1252,6 +1256,10 @@ class BuildTarget(Target):
         if not isinstance(generate_umbrella, (str, bool)):
             raise InvalidArguments(f'Invalid generate_umbrella "{generate_umbrella}": must be a str or bool.')
         self.generate_umbrella = generate_umbrella
+        umbrella_path = kwargs.get('umbrella_path', 'include')
+        if not isinstance(umbrella_path, str):
+            raise InvalidArguments(f'Invalid umbrella_path "{umbrella_path}": must be a str.')
+        self.umbrella_path = umbrella_path
 
     def validate_win_subsystem(self, value: str) -> str:
         value = value.lower()

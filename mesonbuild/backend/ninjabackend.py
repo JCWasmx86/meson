@@ -2138,12 +2138,13 @@ class NinjaBackend(backends.Backend):
         name = target.name if isinstance(target.generate_umbrella, bool) else target.generate_umbrella
         private_dir = self.get_target_private_dir_abs(target)
         module_file = os.path.join(private_dir, 'module.modulemap')
-        module_path = os.path.normcase(os.path.abspath(os.path.join(target.subdir, '..', self.get_target_source_dir(target))))
+        src_dir = self.environment.get_source_dir()
+        module_path = os.path.abspath(os.path.join(src_dir, target.subdir))
         if os.path.exists(module_file):
             return
         with open(module_file, 'w') as filep:
             filep.write('module ' + name + ' {\n')
-            filep.write(f'  umbrella \"{module_path}/include\"\n')
+            filep.write(f'  umbrella \"{module_path}/{target.umbrella_path}\"\n')
             filep.write('  export *\n')
             filep.write('}\n')
 
@@ -3707,3 +3708,4 @@ def _scan_fortran_file_deps(src: Path, srcdir: Path, dirname: Path, tdeps, compi
                     mod_name = compiler.module_name_to_filename(ancestor_child)
                     mod_files.append(str(dirname / mod_name))
     return mod_files
+
