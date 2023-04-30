@@ -2147,6 +2147,13 @@ class NinjaBackend(backends.Backend):
             filep.write(f'  umbrella \"{module_path}/{target.umbrella_path}\"\n')
             filep.write('  export *\n')
             filep.write('}\n')
+    
+    def find_external_deps(self, target):
+        ret = []
+        for d in target.get_dependencies():
+            ret += self.find_external_deps(d)
+        ret += target.get_external_deps()
+        return ret
 
     def generate_swift_target(self, target):
         module_name = self.target_swift_modulename(target)
@@ -2175,6 +2182,10 @@ class NinjaBackend(backends.Backend):
         compile_args = swiftc.get_compile_only_args()
         if not isinstance(target, build.Executable) or (len(target.get_sources()) == 1 and not target.get_sources()[0].relative_name().endswith('main.swift')):
             compile_args += ['-parse-as-library']
+        external_deps = self.find_external_deps(target)
+        external_deps_as_str = []
+        for t in external_deps:
+            external_deps_as_str += t.get_link_args()
         compile_args += ['-DSWIFT_PACKAGE']
         compile_args += swiftc.get_optimization_args(target.get_option(OptionKey('optimization')))
         compile_args += swiftc.get_debug_args(target.get_option(OptionKey('debug')))
@@ -2191,7 +2202,7 @@ class NinjaBackend(backends.Backend):
                 srctreedir = os.path.normpath(os.path.join(self.environment.get_build_dir(), self.build_to_src, expdir))
                 sargs = swiftc.get_include_args(srctreedir, False)
                 compile_args += sargs
-        link_args = swiftc.get_output_args(os.path.join(self.environment.get_build_dir(), self.get_target_filename(target)))
+        link_args =  swiftc.get_output_args(os.path.join(self.environment.get_build_dir(), self.get_target_filename(target)))
         link_args += self.build.get_project_link_args(swiftc, target.subproject, target.for_machine)
         link_args += self.build.get_global_link_args(swiftc, target.for_machine)
         rundir = self.get_target_private_dir(target)
@@ -2208,6 +2219,7 @@ class NinjaBackend(backends.Backend):
             if reldir == '':
                 reldir = '.'
             link_args += ['-L', os.path.normpath(os.path.join(self.environment.get_build_dir(), reldir))]
+        #link_args += list(set(external_deps_as_str)) 
         (rel_generated, _) = self.split_swift_generated_sources(target)
         abs_generated = [os.path.join(self.environment.get_build_dir(), x) for x in rel_generated]
         # We need absolute paths because swiftc needs to be invoked in a subdir
@@ -2242,7 +2254,7 @@ class NinjaBackend(backends.Backend):
             elem = NinjaBuildElement(self.all_outputs, self.get_target_filename(target), rulename, [])
             elem.add_dep(rel_objects)
             elem.add_dep(link_deps)
-            elem.add_item('ARGS', link_args + swiftc.get_std_exe_link_args() + objects + abs_link_deps)
+            elem.add_item('ARGS', link_args + swiftc.get_std_exe_link_args() + objects + abs_link_deps + list(set(external_deps_as_str)) + ["-lstdc++"])
             elem.add_item('RUNDIR', rundir)
             self.add_build(elem)
         else:
