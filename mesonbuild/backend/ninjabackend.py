@@ -2155,6 +2155,13 @@ class NinjaBackend(backends.Backend):
         ret += target.get_external_deps()
         return ret
 
+    def find_deps(self, target):
+        ret = []
+        for d in target.get_dependencies():
+            ret += self.find_deps(d)
+        ret += target.get_dependencies()
+        return ret
+
     def generate_swift_target(self, target):
         module_name = self.target_swift_modulename(target)
         swiftc = target.compilers['swift']
@@ -2216,6 +2223,7 @@ class NinjaBackend(backends.Backend):
             module_includes += swiftc.get_include_args(x, False)
         link_deps = self.get_swift_link_deps(target)
         abs_link_deps = [os.path.join(self.environment.get_build_dir(), x) for x in link_deps]
+        abs_link_deps += list(set([os.path.join(self.environment.get_build_dir(), self.get_target_filename(x)) for x in self.find_deps(target)]))
         for d in target.link_targets:
             reldir = self.get_target_dir(d)
             if reldir == '':
