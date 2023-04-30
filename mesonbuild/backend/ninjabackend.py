@@ -2182,6 +2182,8 @@ class NinjaBackend(backends.Backend):
         compile_args = swiftc.get_compile_only_args()
         if not isinstance(target, build.Executable) or (len(target.get_sources()) == 1 and not target.get_sources()[0].relative_name().endswith('main.swift')):
             compile_args += ['-parse-as-library']
+        # TODO: Configurable
+        compile_args += ['-package-description-version', '999']
         external_deps = self.find_external_deps(target)
         external_deps_as_str = []
         for t in external_deps:
