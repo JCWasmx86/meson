@@ -81,7 +81,7 @@ class SwiftCompiler(Compiler):
         return ['-emit-executable']
 
     def get_module_args(self, modname: str) -> T.List[str]:
-        return ['-module-name', modname]
+        return ['-module-name', modname.replace('-', '_')]
 
     def get_mod_gen_args(self) -> T.List[str]:
         return ['-emit-module']
