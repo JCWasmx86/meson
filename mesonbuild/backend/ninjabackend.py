@@ -2211,7 +2211,7 @@ class NinjaBackend(backends.Backend):
                 srctreedir = os.path.normpath(os.path.join(self.environment.get_build_dir(), self.build_to_src, expdir))
                 sargs = swiftc.get_include_args(srctreedir, False)
                 compile_args += sargs
-        link_args =  swiftc.get_output_args(os.path.join(self.environment.get_build_dir(), self.get_target_filename(target)))
+        link_args = swiftc.get_output_args(os.path.join(self.environment.get_build_dir(), self.get_target_filename(target)))
         link_args += self.build.get_project_link_args(swiftc, target.subproject, target.for_machine)
         link_args += self.build.get_global_link_args(swiftc, target.for_machine)
         rundir = self.get_target_private_dir(target)
@@ -2229,7 +2229,6 @@ class NinjaBackend(backends.Backend):
             if reldir == '':
                 reldir = '.'
             link_args += ['-L', os.path.normpath(os.path.join(self.environment.get_build_dir(), reldir))]
-        #link_args += list(set(external_deps_as_str)) 
         (rel_generated, _) = self.split_swift_generated_sources(target)
         abs_generated = [os.path.join(self.environment.get_build_dir(), x) for x in rel_generated]
         # We need absolute paths because swiftc needs to be invoked in a subdir
